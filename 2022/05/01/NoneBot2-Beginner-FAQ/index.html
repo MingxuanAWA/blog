@@ -17,7 +17,7 @@
 <meta property="og:image" content="https://mingxuangame.github.io/images/can">
 <meta property="og:image" content="https://mingxuangame.github.io/images/junk-screenshot.jpg">
 <meta property="article:published_time" content="2022-05-01T09:13:22.000Z">
-<meta property="article:modified_time" content="2022-05-01T13:00:31.452Z">
+<meta property="article:modified_time" content="2022-05-01T15:21:08.469Z">
 <meta property="article:author" content="MingxuanGame">
 <meta property="article:tag" content="nonebot2">
 <meta property="article:tag" content="beginner">
@@ -149,6 +149,9 @@
 <p>在配置关闭 <code>fastapi_reload</code> 即可</p>
 <p>也可参考<a target="_blank" rel="noopener" href="https://github.com/nonebot/nonebot2/issues/376#issuecomment-846523618">nonebot&#x2F;nonebot2#376#issuecomment-846523618</a>的猴子补丁修复</p>
 <p>详情参考<a target="_blank" rel="noopener" href="https://github.com/nonebot/nonebot2/issues/376">nonebot&#x2F;nonebot2#376</a>、<a target="_blank" rel="noopener" href="https://github.com/nonebot/nonebot2/issues/830">nonebot&#x2F;nonebot2#830</a></p>
+<h2 id="二维码登录提示存在危险"><a href="#二维码登录提示存在危险" class="headerlink" title="二维码登录提示存在危险"></a>二维码登录提示存在危险</h2><p>腾讯修改了二维码登录，增加了更严格的限制，需要在同一区域才可以使用二维码登录</p>
+<p>目前可以的解决办法：</p>
+<p>1.服务器开代理服务器，手机连接代理扫码登录<br>2.本地登录，将设备信息（<code>device.json</code>）和 Token（session.token）上传到服务器</p>
 <h2 id="账号被风控"><a href="#账号被风控" class="headerlink" title="账号被风控"></a>账号被风控</h2><p>tx不开心，把你的机器人风控了（我们称之为喜报）</p>
 <p><img src="/images/can't-send-msg.gif" alt="喜报"></p>
 <p>目前可能解除风控的办法：</p>
@@ -182,6 +185,15 @@
     
 <nav id="article-nav">
   
+    <a href="/2022/05/01/NoneBot2-Funny-Docs/override/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          不正确的方式解读 NoneBot2 文档--前言
+        
+      </div>
+    </a>
+  
   
     <a href="/2022/05/01/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">后一篇</strong>
@@ -205,7 +217,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQCode/" rel="tag">CQCode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FAQ/" rel="tag">FAQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beginner/" rel="tag">beginner</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/copyright/" rel="tag">copyright</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-cqhttp/" rel="tag">go-cqhttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/" rel="tag">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nonebot2/" rel="tag">nonebot2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/onebot/" rel="tag">onebot</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CQCode/" rel="tag">CQCode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FAQ/" rel="tag">FAQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WIP/" rel="tag">WIP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/beginner/" rel="tag">beginner</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/copyright/" rel="tag">copyright</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go-cqhttp/" rel="tag">go-cqhttp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/image/" rel="tag">image</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nonebot2/" rel="tag">nonebot2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nonebot2-doc/" rel="tag">nonebot2-doc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/onebot/" rel="tag">onebot</a></li></ul>
     </div>
   </div>
 
@@ -215,7 +227,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/CQCode/" style="font-size: 10px;">CQCode</a> <a href="/tags/FAQ/" style="font-size: 10px;">FAQ</a> <a href="/tags/beginner/" style="font-size: 10px;">beginner</a> <a href="/tags/copyright/" style="font-size: 10px;">copyright</a> <a href="/tags/go-cqhttp/" style="font-size: 10px;">go-cqhttp</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/nonebot2/" style="font-size: 10px;">nonebot2</a> <a href="/tags/onebot/" style="font-size: 10px;">onebot</a>
+      <a href="/tags/CQCode/" style="font-size: 10px;">CQCode</a> <a href="/tags/FAQ/" style="font-size: 10px;">FAQ</a> <a href="/tags/WIP/" style="font-size: 20px;">WIP</a> <a href="/tags/beginner/" style="font-size: 10px;">beginner</a> <a href="/tags/copyright/" style="font-size: 10px;">copyright</a> <a href="/tags/go-cqhttp/" style="font-size: 10px;">go-cqhttp</a> <a href="/tags/image/" style="font-size: 10px;">image</a> <a href="/tags/nonebot2/" style="font-size: 10px;">nonebot2</a> <a href="/tags/nonebot2-doc/" style="font-size: 20px;">nonebot2-doc</a> <a href="/tags/onebot/" style="font-size: 10px;">onebot</a>
     </div>
   </div>
 
@@ -235,6 +247,14 @@
     <h3 class="widget-title">最新文章</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/05/01/NoneBot2-Funny-Docs/Driver-Adapter-Plugin/">驱动器、适配器和插件</a>
+          </li>
+        
+          <li>
+            <a href="/2022/05/01/NoneBot2-Funny-Docs/override/">不正确的方式解读 NoneBot2 文档--前言</a>
+          </li>
         
           <li>
             <a href="/2022/05/01/NoneBot2-Beginner-FAQ/">NoneBot2 新手 FAQ</a>
