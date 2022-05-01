@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>MingxuanGame&#39;s Blog</title>
+  
+  <subtitle>Do want you like.</subtitle>
+  <link href="https://mingxuangame.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://mingxuangame.github.io/"/>
+  <updated>2022-05-01T06:53:53.274Z</updated>
+  <id>https://mingxuangame.github.io/</id>
+  
+  <author>
+    <name>MingxuanGame</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://mingxuangame.github.io/2022/05/01/hello-world/"/>
+    <id>https://mingxuangame.github.io/2022/05/01/hello-world/</id>
+    <published>2022-04-30T16:00:00.000Z</published>
+    <updated>2022-05-01T06:53:53.274Z</updated>
+    
+    <content type="html"><![CDATA[<p>Hi，我是 MingxuanGame，一名初中生</p><p>我的 GitHub 地址：<a href="https://github.com/MingxuanGame">MingxuanGame</a></p><p>Email：<a href="mailto:&#x4d;&#x69;&#x6e;&#x67;&#x78;&#117;&#97;&#x6e;&#x47;&#x61;&#109;&#101;&#64;&#111;&#117;&#x74;&#x6c;&#111;&#111;&#107;&#x2e;&#99;&#x6f;&#109;">&#x4d;&#x69;&#x6e;&#x67;&#x78;&#117;&#97;&#x6e;&#x47;&#x61;&#109;&#101;&#64;&#111;&#117;&#x74;&#x6c;&#111;&#111;&#107;&#x2e;&#99;&#x6f;&#109;</a></p><p>QQ：1060148379</p><h2 id="我正在学习什么？"><a href="#我正在学习什么？" class="headerlink" title="我正在学习什么？"></a>我正在学习什么？</h2><p><img src="https://img.shields.io/badge/-Python-blue?style=flat-square&logo=Python&logoColor=fff" alt="Python"></p><p><img src="https://img.shields.io/badge/-C-585858?style=flat-square&logo=C&logoColor=fff" alt="C"></p><p><img src="https://img.shields.io/badge/-Go-007d9c?style=flat-square&logo=Go&logoColor=fff" alt="Golang"></p><p><img src="https://img.shields.io/badge/-Linux-black?style=flat-square&logo=Linux&logoColor=fff" alt="Linux"></p><h2 id="我用什么-IDE？"><a href="#我用什么-IDE？" class="headerlink" title="我用什么 IDE？"></a>我用什么 IDE？</h2><p><img src="https://img.shields.io/badge/-VSCode-blue?style=flat-square&logo=visualstudiocode&logoColor=fff" alt="VSCode"></p><p><img src="https://img.shields.io/badge/-Pycharm-green?style=flat-square&logo=pycharm&logoColor=fff" alt="Pycharm"></p><p><img src="https://img.shields.io/badge/-Goland-purple?style=flat-square&logo=goland&logoColor=fff" alt="Goland"></p><h3 id="项目"><a href="#项目" class="headerlink" title="项目"></a>项目</h3><p><a href="https://github.com/MingxuanGame/nonebot-plugin-rtfm">NoneBot2 文档搜索插件</a></p><h3 id="有关-NoneBot2-文档教程"><a href="#有关-NoneBot2-文档教程" class="headerlink" title="有关 NoneBot2 文档教程"></a>有关 NoneBot2 文档教程</h3><p><em>待补充</em></p><h3 id="版权"><a href="#版权" class="headerlink" title="版权"></a>版权</h3><p>本博客所有文章以<a href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>共享，相关代码以<a href="../../LICENSE">MIT</a>许可证开源</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;Hi，我是 MingxuanGame，一名初中生&lt;/p&gt;
+&lt;p&gt;我的 GitHub 地址：&lt;a href=&quot;https://github.com/MingxuanGame&quot;&gt;MingxuanGame&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Email：&lt;a href=&quot;mailto:&amp;#x4</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>LICENSE</title>
+    <link href="https://mingxuangame.github.io/2022/05/01/LICENSE/"/>
+    <id>https://mingxuangame.github.io/2022/05/01/LICENSE/</id>
+    <published>2022-04-30T16:00:00.000Z</published>
+    <updated>2022-05-01T07:12:27.930Z</updated>
+    
+    <content type="html"><![CDATA[<p>The MIT License (MIT)<br>Copyright (c) 2022 MingxuanGame</p><p>Permission is hereby granted, free of charge, to any person obtaining a copy of<br>this software and associated documentation files (the “Software”), to deal in<br>the Software without restriction, including without limitation the rights to<br>use, copy, modify, merge, publish, distribute, sublicense, and&#x2F;or sell copies of<br>the Software, and to permit persons to whom the Software is furnished to do so,<br>subject to the following conditions:</p><p>The above copyright notice and this permission notice shall be included in all<br>copies or substantial portions of the Software.</p><p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR<br>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS<br>FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR<br>COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER<br>IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN<br>CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;The MIT License (MIT)&lt;br&gt;Copyright (c) 2022 MingxuanGame&lt;/p&gt;
+&lt;p&gt;Permission is hereby granted, free of charge, to any person obtaining a c</summary>
+      
+    
+    
+    
+    
+    <category term="copyright" scheme="https://mingxuangame.github.io/tags/copyright/"/>
+    
+  </entry>
+  
+</feed>
