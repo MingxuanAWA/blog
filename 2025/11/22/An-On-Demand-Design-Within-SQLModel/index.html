@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+  
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="MingxuanGame" />
+  
+  
+  <title>在 SQLModel 下的一种按需返回的设计 | MingxuanGame&#39;s blog</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="g0v0-server,SQLModel,python," />
+  
+
+  
+  <meta name="description" content="MingxuanGame&#39;s blog, code for fun.">
+
+  
+
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.1/dist/av-min.js" async></script>
+  
+
+  
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+  
+
+  
+
+  
+
+  <script>
+  // theme-ad's config script
+  // it can be used in every script
+  
+  window.AD_CONFIG = {
+    leancloud: {"appid":"Xqx314bLUnrL2wetLC03Ofhu-MdYXbMMI","appkey":"kQXnQs2wtu271vKEaJXDnVnN","comment":false,"count":true},
+    welcome: {"enable":true,"interval":30},
+    start_time: "2022-09-08",
+    passwords: ["efe07af7441da2b69c4a41e42e73be4db47f66010a56900788a458354a7373ec", ],
+    is_post: true,
+    lock: false,
+    author: "MingxuanGame",
+    share: {"twitter":false,"facebook":false,"weibo":false,"qq":false,"wechat":false},
+    mathjax: true,
+    page_type: "",
+    root: "/"
+  };
+</script>
+
+  
+<script src="/vendor/sha256.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/index.js"></script>
+<script src="/vendor/qrcode.min.js"></script>
+
+
+  
+    <link rel="icon" href="/images/favicon.jpeg">
+    <link rel="apple-touch-icon" href="/images/favicon.jpeg">
+  
+
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+  
+<link rel="stylesheet" href="/css/index.css">
+<link rel="stylesheet" href="/styles/components/highlight/highlight.css">
+
+
+  
+<!-- hexo injector head_end start -->
+    <style type="text/css">
+      .admonition {
+        margin: 1.5625em 0;
+        padding: .6rem;
+        overflow: hidden;
+        font-size: .64rem;
+        page-break-inside: avoid;
+        border-left: .3rem solid #42b983;
+        border-radius: .3rem;
+        box-shadow: 0 0.1rem 0.4rem rgba(0,0,0,.05), 0 0 0.05rem rgba(0,0,0,.1);
+        background-color: #fafafa;
+      }
+
+      p.admonition-title {
+        position: relative;
+        margin: -.6rem -.6rem .8em -.6rem !important;
+        padding: .4rem .6rem .4rem 2.5rem;
+        font-weight: 700;
+        background-color:rgba(66, 185, 131, .1);
+      }
+
+      .admonition-title::before {
+        position: absolute;
+        top: .9rem;
+        left: 1rem;
+        width: 12px;
+        height: 12px;
+        background-color: #42b983;
+        border-radius: 50%;
+        content: ' ';
+      }
+
+      .info>.admonition-title, .todo>.admonition-title {
+        background-color: rgba(0,184,212,.1);
+      }
+
+      .warning>.admonition-title, .attention>.admonition-title, .caution>.admonition-title {
+        background-color: rgba(255,145,0,.1);
+      }
+
+      .failure>.admonition-title, .missing>.admonition-title, .fail>.admonition-title, .error>.admonition-title {
+        background-color: rgba(255,82,82,.1);
+      }
+
+      .admonition.info, .admonition.todo {
+        border-color: #00b8d4;
+      }
+
+      .admonition.warning, .admonition.attention, .admonition.caution {
+        border-color: #ff9100;
+      }
+
+      .admonition.failure, .admonition.missing, .admonition.fail, .admonition.error {
+        border-color: #ff5252;
+      }
+
+      .info>.admonition-title::before, .todo>.admonition-title::before {
+        background-color: #00b8d4;
+        border-radius: 50%;
+      }
+
+      .warning>.admonition-title::before, .attention>.admonition-title::before, .caution>.admonition-title::before {
+        background-color: #ff9100;
+        border-radius: 50%;
+      }
+
+      .failure>.admonition-title::before,.missing>.admonition-title::before,.fail>.admonition-title::before,.error>.admonition-title::before{
+        background-color: #ff5252;;
+        border-radius: 50%;
+      }
+
+      .admonition>:last-child {
+        margin-bottom: 0 !important;
+      }
+    </style>
+  <!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+  <body>
+    <header class="site-header">
+  <div class="site-header-brand">
+    
+      <span class="site-header-brand-title">
+        <a href="/">MingxuanGame</a>
+      </span>
+    
+    
+  </div>
+  <div class="site-header-right">
+    <nav class="site-header-navigation">
+      
+        <a href="/" target="_self">首页</a>
+      
+        <a href="/archives/" target="_self">归档</a>
+      
+        <a href="/tags/" target="_self">标签</a>
+      
+        <a href="/categories/" target="_self">分类</a>
+      
+        <a href="/friends/" target="_self">友链</a>
+      
+        <a href="/about/" target="_self">关于</a>
+      
+    </nav>
+    <div class="site-header-btn">
+      
+        <a href="https://github.com/MingxuanGame" target="_blank" id="site-github">
+          <i class="fa fa-github-alt"></i>
+        </a>
+      
+      <a href="javascript:void(0);" id="site-search">
+        <i class="fa fa-search"></i>
+      </a>
+      <a href="javascript:void(0);" id="site-nav-btn">
+        <i class="fa fa-ellipsis-v"></i>
+      </a>
+    </div>
+  </div>
+</header>
+<nav class="table-content" id="site-nav">
+  <div class="table-content-title">
+    <span>导航</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc">
+      
+        <li class="toc-item">
+          <a href="/" target="_self">
+            首页
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/archives/" target="_self">
+            归档
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/tags/" target="_self">
+            标签
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/categories/" target="_self">
+            分类
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/friends/" target="_self">
+            友链
+          </a>
+        </li>
+      
+        <li class="toc-item">
+          <a href="/about/" target="_self">
+            关于
+          </a>
+        </li>
+      
+    </ol>
+  </div>
+</nav>
+<div id="site-process"></div>
+    <main>
+      
+  <div class="passage">
+  <div class="passage-meta">
+    <span>
+      <i class="fa fa-calendar"></i>2025-11-22
+    </span>
+    
+      <span>
+        | <a href="/categories/g0v0-server/"><i class="fa fa-bookmark"></i>g0v0-server</a>
+      </span>
+    
+    
+      <span>
+        | <i class="fa fa-unlock-alt"></i>UNLOCK
+      </span>
+    
+  </div>
+  <h1 class="passage-title">
+    在 SQLModel 下的一种按需返回的设计
+  </h1>
+  
+  <article class="passage-article">
+    <p>本文介绍了在 <a target="_blank" rel="noopener" href="https://github.com/GooGuTeam/g0v0-server">g0v0-server</a> 中使用的按需返回设计。</p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p><a target="_blank" rel="noopener" href="https://github.com/ppy/osu-web">osu-web</a> 中使用了 Fractal 的 Transformer 控制 API 的返回，而 g0v0-server 使用了 <code>from_db</code> 方法附加 include 参数处理控制返回。但是：</p>
+<ul>
+<li>include 无法传递给子模型</li>
+<li>各模型的 <code>from_db</code> 方法不统一</li>
+</ul>
+<p>于是我设计了这样的一种机制：它可以根据指定的 include，将模型导出成精简后的 dict，同时可以根据指定的 include 生成 TypedDict 来传入到 FastAPI 生成文档。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>对于此设计下定义的模型，字段会被分成四种类型：</p>
+<ul>
+<li>普通属性<ul>
+<li>直接定义在模型里，和正常使用一样</li>
+</ul>
+</li>
+<li>可选属性<ul>
+<li>使用 <code>OnDemand</code> 包装类型，比如 <code>OnDemand[int]</code></li>
+</ul>
+</li>
+<li>普通计算属性<ul>
+<li>一个函数来计算返回内容，使用 <code>@included</code> 装饰</li>
+</ul>
+</li>
+<li>可选计算属性<ul>
+<li>同上，但使用 <code>@ondemand</code> 装饰</li>
+</ul>
+</li>
+</ul>
+<p>可选的属性需要在 <code>includes</code> 中指定才会返回。此外还可以在转换的时候传入上下文来准确返回需要的内容。</p>
+<h2 id="实现细节"><a href="#实现细节" class="headerlink" title="实现细节"></a>实现细节</h2><blockquote>
+<p>语法采用 Python 3.12+ 的泛型语法，较旧的 Python 请使用 <code>Generic[T]</code> 代替。<br>代码省略了类型的导入，请自行从 <code>typing</code> 模块导入。</p>
+</blockquote>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>首先定义 <code>OnDemand</code> 来标识可选属性。由于我们不在真正的模型使用它，这里就使用 <code>TYPE_CHECKING</code> 来骗过 type checker。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">OnDemand</span>[T]:</span><br><span class="line">    <span class="keyword">if</span> TYPE_CHECKING:</span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">__get__</span>(<span class="params">self, instance: <span class="built_in">object</span> | <span class="literal">None</span>, owner: <span class="type">Any</span></span>) -&gt; T: ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">__set__</span>(<span class="params">self, instance: <span class="type">Any</span>, value: T</span>) -&gt; <span class="literal">None</span>: ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">__delete__</span>(<span class="params">self, instance: <span class="type">Any</span></span>) -&gt; <span class="literal">None</span>: ...</span><br></pre></td></tr></table></figure>
+
+<p>然后定义 <code>@included</code> 和 <code>@ondemand</code> 装饰器。这里将对应的标记储存到函数中。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">P = ParamSpec(<span class="string">&quot;P&quot;</span>)</span><br><span class="line">CalculatedField = <span class="type">Callable</span>[Concatenate[AsyncSession, <span class="type">Any</span>, P], Awaitable[<span class="type">Any</span>]]</span><br><span class="line">DecoratorTarget = CalculatedField | <span class="built_in">staticmethod</span> | <span class="built_in">classmethod</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_mark_callable</span>(<span class="params">value: <span class="type">Any</span>, flag: <span class="built_in">str</span></span>) -&gt; <span class="type">Callable</span> | <span class="literal">None</span>:</span><br><span class="line">    target = _get_callable_target(value)</span><br><span class="line">    <span class="keyword">if</span> target <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    <span class="built_in">setattr</span>(target, flag, <span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">return</span> target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对于 @ondemand， 标记是 `__calculated_ondemand__`</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">included</span>(<span class="params">func: DecoratorTarget</span>) -&gt; DecoratorTarget:</span><br><span class="line">    marker = _mark_callable(func, <span class="string">&quot;__included__&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> marker <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> RuntimeError(<span class="string">&quot;@included is only usable on callables.&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @wraps(<span class="params">marker</span>)</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">wrapper</span>(<span class="params">*args, **kwargs</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> marker(*args, **kwargs)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(func, <span class="built_in">staticmethod</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">staticmethod</span>(wrapper)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(func, <span class="built_in">classmethod</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">classmethod</span>(wrapper)</span><br><span class="line">    <span class="keyword">return</span> wrapper</span><br></pre></td></tr></table></figure>
+
+<p>然后我们需要在创建模型的时候读取 <code>OnDemand</code> 中的原类型并用这个类型生成类，以及读取函数的标记。于是使用 metaclass 控制生成过程。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlmodel.main <span class="keyword">import</span> SQLModelMetaclass</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">_dict_to_model: <span class="built_in">dict</span>[<span class="built_in">type</span>, <span class="built_in">type</span>[<span class="string">&quot;DatabaseModel&quot;</span>]] = &#123;&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># https://github.com/fastapi/sqlmodel/blob/main/sqlmodel/_compat.py#L126-L140</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_get_annotations</span>(<span class="params">class_dict: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>]</span>) -&gt; <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>]:</span><br><span class="line">    raw_annotations: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = class_dict.get(<span class="string">&quot;__annotations__&quot;</span>, &#123;&#125;)</span><br><span class="line">    <span class="keyword">if</span> sys.version_info &gt;= (<span class="number">3</span>, <span class="number">14</span>) <span class="keyword">and</span> <span class="string">&quot;__annotations__&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> class_dict:</span><br><span class="line">        <span class="comment"># See https://github.com/pydantic/pydantic/pull/11991</span></span><br><span class="line">        <span class="keyword">from</span> annotationlib <span class="keyword">import</span> (</span><br><span class="line">            Format,</span><br><span class="line">            call_annotate_function,</span><br><span class="line">            get_annotate_from_class_namespace,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> annotate := get_annotate_from_class_namespace(class_dict):</span><br><span class="line">            raw_annotations = call_annotate_function(annotate, <span class="built_in">format</span>=Format.FORWARDREF)</span><br><span class="line">    <span class="keyword">return</span> raw_annotations</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DatabaseModelMetaclass</span>(<span class="title class_ inherited__">SQLModelMetaclass</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__new__</span>(<span class="params"></span></span><br><span class="line"><span class="params">        cls,</span></span><br><span class="line"><span class="params">        name: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">        bases: <span class="built_in">tuple</span>[<span class="built_in">type</span>, ...],</span></span><br><span class="line"><span class="params">        namespace: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>],</span></span><br><span class="line"><span class="params">        **kwargs: <span class="type">Any</span>,</span></span><br><span class="line"><span class="params">    </span>) -&gt; <span class="string">&quot;DatabaseModelMetaclass&quot;</span>:</span><br><span class="line">        original_annotations = _get_annotations(namespace)</span><br><span class="line">        new_annotations = &#123;&#125;</span><br><span class="line">        ondemands = []</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 读取原类型</span></span><br><span class="line">        <span class="keyword">for</span> k, v <span class="keyword">in</span> original_annotations.items():</span><br><span class="line">            <span class="keyword">if</span> get_origin(v) <span class="keyword">is</span> OnDemand:</span><br><span class="line">                inner_type = v.__args__[<span class="number">0</span>]</span><br><span class="line">                new_annotations[k] = inner_type</span><br><span class="line">                ondemands.append(k)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                new_annotations[k] = v</span><br><span class="line"></span><br><span class="line">        new_class = <span class="built_in">super</span>().__new__(</span><br><span class="line">            cls,</span><br><span class="line">            name,</span><br><span class="line">            bases,</span><br><span class="line">            &#123;</span><br><span class="line">                **namespace,</span><br><span class="line">                <span class="string">&quot;__annotations__&quot;</span>: new_annotations,</span><br><span class="line">            &#125;,</span><br><span class="line">            **kwargs,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        new_class._CALCULATED_FIELDS = <span class="built_in">dict</span>(<span class="built_in">getattr</span>(new_class, <span class="string">&quot;_CALCULATED_FIELDS&quot;</span>, &#123;&#125;))</span><br><span class="line">        new_class._ONDEMAND_DATABASE_FIELDS = <span class="built_in">list</span>(<span class="built_in">getattr</span>(new_class, <span class="string">&quot;_ONDEMAND_DATABASE_FIELDS&quot;</span>, [])) + <span class="built_in">list</span>(</span><br><span class="line">            ondemands</span><br><span class="line">        )</span><br><span class="line">        new_class._ONDEMAND_CALCULATED_FIELDS = <span class="built_in">dict</span>(<span class="built_in">getattr</span>(new_class, <span class="string">&quot;_ONDEMAND_CALCULATED_FIELDS&quot;</span>, &#123;&#125;))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> attr_name, attr_value <span class="keyword">in</span> namespace.items():</span><br><span class="line">            target = _get_callable_target(attr_value)</span><br><span class="line">            <span class="keyword">if</span> target <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">getattr</span>(target, <span class="string">&quot;__included__&quot;</span>, <span class="literal">False</span>):</span><br><span class="line">                new_class._CALCULATED_FIELDS[attr_name] = _get_return_type(target)</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">getattr</span>(target, <span class="string">&quot;__calculated_ondemand__&quot;</span>, <span class="literal">False</span>):</span><br><span class="line">                new_class._ONDEMAND_CALCULATED_FIELDS[attr_name] = _get_return_type(target)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 将 TypedDict 和类对应。详情见下</span></span><br><span class="line">        <span class="keyword">for</span> base <span class="keyword">in</span> get_original_bases(new_class):</span><br><span class="line">            cls_name = base.__name__</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;DatabaseModel&quot;</span> <span class="keyword">in</span> cls_name <span class="keyword">and</span> <span class="string">&quot;[&quot;</span> <span class="keyword">in</span> cls_name <span class="keyword">and</span> <span class="string">&quot;]&quot;</span> <span class="keyword">in</span> cls_name:</span><br><span class="line">                generic_type_name = cls_name[cls_name.index(<span class="string">&quot;[&quot;</span>) : cls_name.rindex(<span class="string">&quot;]&quot;</span>) + <span class="number">1</span>]</span><br><span class="line">                generic_type = evaluate_forwardref(</span><br><span class="line">                    ForwardRef(generic_type_name),</span><br><span class="line">                    globalns=<span class="built_in">vars</span>(sys.modules[new_class.__module__]),</span><br><span class="line">                    localns=&#123;&#125;,</span><br><span class="line">                )</span><br><span class="line">                _dict_to_model[generic_type[<span class="number">0</span>]] = new_class</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> new_class</span><br></pre></td></tr></table></figure>
+
+<p>然后创建 <code>DatabaseModel</code>，<code>TDict</code> 用于标记转换后的 dict。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlmodel <span class="keyword">import</span> SQLModel</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DatabaseModel</span>[TDict](SQLModel, metaclass=DatabaseModelMetaclass):</span><br><span class="line">    _CALCULATED_FIELDS: ClassVar[<span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">type</span>]] = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    _ONDEMAND_DATABASE_FIELDS: ClassVar[<span class="built_in">list</span>[<span class="built_in">str</span>]] = []</span><br><span class="line">    _ONDEMAND_CALCULATED_FIELDS: ClassVar[<span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">type</span>]] = &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我们将普通计算属性 存储到了 <code>_CALCULATED_FIELDS</code>，可选属性存储到了 <code>_ONDEMAND_DATABASE_FIELDS</code>，可选计算属性存储到了 <code>_ONDEMAND_CALCULATED_FIELDS</code>。接下来的转换就会读取这些内容。</p>
+<h3 id="转换的实现"><a href="#转换的实现" class="headerlink" title="转换的实现"></a>转换的实现</h3><p>定义 <code>transform</code> 方法，接收一个 <code>DatabaseModel</code>。在实际使用中这个实例通常是来自数据库的。同时接受 includes，其他的数据库 session 和上下文。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@overload</span></span><br><span class="line"><span class="meta">@classmethod</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params"></span></span><br><span class="line"><span class="params">    cls,</span></span><br><span class="line"><span class="params">    db_instance: <span class="string">&quot;DatabaseModel&quot;</span>,</span></span><br><span class="line"><span class="params">    *,</span></span><br><span class="line"><span class="params">    session: AsyncSession,</span></span><br><span class="line"><span class="params">    includes: <span class="built_in">list</span>[<span class="built_in">str</span>] | <span class="literal">None</span> = <span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    **context: <span class="type">Any</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; TDict: ...</span><br><span class="line"></span><br><span class="line"><span class="meta">@overload</span></span><br><span class="line"><span class="meta">@classmethod</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params"></span></span><br><span class="line"><span class="params">    cls,</span></span><br><span class="line"><span class="params">    db_instance: <span class="string">&quot;DatabaseModel&quot;</span>,</span></span><br><span class="line"><span class="params">    *,</span></span><br><span class="line"><span class="params">    includes: <span class="built_in">list</span>[<span class="built_in">str</span>] | <span class="literal">None</span> = <span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    **context: <span class="type">Any</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; TDict: ...</span><br></pre></td></tr></table></figure>
+
+<p>下面编写具体实现。</p>
+<p>由于上下文传入需要根据参数名传递，我们使用 <code>inspect</code> 模块读取函数参数并传递。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> inspect</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">call_awaitable_with_context</span>(<span class="params"></span></span><br><span class="line"><span class="params">    func: CalculatedField,</span></span><br><span class="line"><span class="params">    session: AsyncSession,</span></span><br><span class="line"><span class="params">    instance: <span class="type">Any</span>,</span></span><br><span class="line"><span class="params">    context: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>],</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">    sig = inspect.signature(func)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(sig.parameters) == <span class="number">2</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> func(session, instance)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        call_params = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> param <span class="keyword">in</span> sig.parameters.values():</span><br><span class="line">            <span class="keyword">if</span> param.name <span class="keyword">in</span> context:</span><br><span class="line">                call_params[param.name] = context[param.name]</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> func(session, instance, **call_params)</span><br></pre></td></tr></table></figure>
+
+<p>现在编写 <code>transform</code> 方法。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy.ext.asyncio <span class="keyword">import</span> async_object_session</span><br><span class="line"><span class="keyword">from</span> sqlmodel.ext.asyncio.session <span class="keyword">import</span> AsyncSession</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@classmethod</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params"></span></span><br><span class="line"><span class="params">    cls,</span></span><br><span class="line"><span class="params">    db_instance: <span class="string">&quot;DatabaseModel&quot;</span>,</span></span><br><span class="line"><span class="params">    *,</span></span><br><span class="line"><span class="params">    session: AsyncSession | <span class="literal">None</span> = <span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    includes: <span class="built_in">list</span>[<span class="built_in">str</span>] | <span class="literal">None</span> = <span class="literal">None</span>,</span></span><br><span class="line"><span class="params">    **context: <span class="type">Any</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; TDict:</span><br><span class="line">    includes = includes.copy() <span class="keyword">if</span> includes <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">else</span> []</span><br><span class="line">    session = cast(AsyncSession | <span class="literal">None</span>, async_object_session(db_instance)) <span class="keyword">if</span> session <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> session</span><br><span class="line">    <span class="keyword">if</span> session <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> RuntimeError(<span class="string">&quot;DatabaseModel.transform requires a session-bound instance.&quot;</span>)</span><br><span class="line">    resp_obj = cls.model_validate(db_instance.model_dump())</span><br><span class="line">    data = resp_obj.model_dump()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> field <span class="keyword">in</span> cls._CALCULATED_FIELDS:</span><br><span class="line">        func = <span class="built_in">getattr</span>(cls, field)</span><br><span class="line">        value = <span class="keyword">await</span> call_awaitable_with_context(func, session, db_instance, context)</span><br><span class="line">        data[field] = value</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取嵌套 include</span></span><br><span class="line">    sub_include_map: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">list</span>[<span class="built_in">str</span>]] = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> include <span class="keyword">in</span> [i <span class="keyword">for</span> i <span class="keyword">in</span> includes <span class="keyword">if</span> <span class="string">&quot;.&quot;</span> <span class="keyword">in</span> i]:</span><br><span class="line">        parent, sub_include = include.split(<span class="string">&quot;.&quot;</span>, <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> parent <span class="keyword">not</span> <span class="keyword">in</span> sub_include_map:</span><br><span class="line">            sub_include_map[parent] = []</span><br><span class="line">        sub_include_map[parent].append(sub_include)</span><br><span class="line">        includes.remove(include)  <span class="comment"># pyright: ignore[reportOptionalMemberAccess]</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> field, sub_includes <span class="keyword">in</span> sub_include_map.items():</span><br><span class="line">        <span class="keyword">if</span> field <span class="keyword">in</span> cls._ONDEMAND_CALCULATED_FIELDS:</span><br><span class="line">            func = <span class="built_in">getattr</span>(cls, field)</span><br><span class="line">            <span class="comment"># 将嵌套 include 传递下去</span></span><br><span class="line">            value = <span class="keyword">await</span> call_awaitable_with_context(</span><br><span class="line">                func, session, db_instance, &#123;**context, <span class="string">&quot;includes&quot;</span>: sub_includes&#125;</span><br><span class="line">            )</span><br><span class="line">            data[field] = value</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> include <span class="keyword">in</span> includes:</span><br><span class="line">        <span class="keyword">if</span> include <span class="keyword">in</span> data:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> include <span class="keyword">in</span> cls._ONDEMAND_CALCULATED_FIELDS:</span><br><span class="line">            func = <span class="built_in">getattr</span>(cls, include)</span><br><span class="line">            value = <span class="keyword">await</span> call_awaitable_with_context(func, session, db_instance, context)</span><br><span class="line">            data[include] = value</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> field <span class="keyword">in</span> cls._ONDEMAND_DATABASE_FIELDS:</span><br><span class="line">        <span class="keyword">if</span> field <span class="keyword">not</span> <span class="keyword">in</span> includes:</span><br><span class="line">            <span class="comment"># 对于可选 属性，在 dump 时会在 data 中存在，在这里删除掉。</span></span><br><span class="line">            <span class="keyword">del</span> data[field]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> cast(TDict, data)</span><br></pre></td></tr></table></figure>
+
+<h3 id="TypedDict-的生成"><a href="#TypedDict-的生成" class="headerlink" title="TypedDict 的生成"></a>TypedDict 的生成</h3><p>由于 FastAPI 内部使用 <code>TypeAdapter</code> 生成 JSON Schema，但 <code>ForwardRef</code> 无法被正确解析，我们需要在模型创建时生成对应的 <code>TypedDict</code> 并将其和模型对应起来。</p>
+<p>这里使用来自 <a target="_blank" rel="noopener" href="https://github.com/pydantic/pydantic/blob/main/pydantic/v1/typing.py#L58-L77">Pydantic v1 的代码</a>解析 <code>ForwardRef</code>，方法名为 <code>evaluate_forwardref</code>。</p>
+<p>但如果标注在 <code>DatabaseModel</code> 的 <code>TypedDict</code> 无法被正确解析，往往是那个模型的 module 不存在此类型（通常是在 <code>if TYPE_CHECKING</code> 中导入），则需要在一个导入了所有 TypedDict 的模块中导入这个模型模块以确保类型存在。（在 g0v0-server 中这个模块是 <code>app.database</code>）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_safe_evaluate_forwardref</span>(<span class="params">type_: <span class="built_in">str</span> | ForwardRef, module_name: <span class="built_in">str</span></span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Safely evaluate a ForwardRef, with fallback to app.database module&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(type_, <span class="built_in">str</span>):</span><br><span class="line">        type_ = ForwardRef(type_)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">return</span> evaluate_forwardref(</span><br><span class="line">            type_,</span><br><span class="line">            globalns=<span class="built_in">vars</span>(sys.modules[module_name]),</span><br><span class="line">            localns=&#123;&#125;,</span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">except</span> (NameError, AttributeError, KeyError):</span><br><span class="line">        <span class="comment"># 回退到 app.database</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">import</span> app.database</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> evaluate_forwardref(</span><br><span class="line">                type_,</span><br><span class="line">                globalns=<span class="built_in">vars</span>(app.database),</span><br><span class="line">                localns=&#123;&#125;,</span><br><span class="line">            )</span><br><span class="line">        <span class="keyword">except</span> (NameError, AttributeError, KeyError):</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+
+<p>现在开始实现 <code>generate_typeddict</code>。嵌套的 <code>DatabaseModel</code> 也会被转换成对应的 <code>TypedDict</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> functools <span class="keyword">import</span> lru_cache</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@classmethod</span></span><br><span class="line"><span class="meta">@lru_cache</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">generate_typeddict</span>(<span class="params">cls, includes: <span class="built_in">tuple</span>[<span class="built_in">str</span>, ...] | <span class="literal">None</span> = <span class="literal">None</span></span>) -&gt; <span class="built_in">type</span>[TypedDict]:  <span class="comment"># pyright: ignore[reportInvalidTypeForm]</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_evaluate_type</span>(<span class="params">field_type: <span class="type">Any</span>, *, resolve_database_model: <span class="built_in">bool</span> = <span class="literal">False</span>, field_name: <span class="built_in">str</span> = <span class="string">&quot;&quot;</span></span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">        <span class="comment"># 尝试解析 ForwardRef</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(field_type, (<span class="built_in">str</span>, ForwardRef)):</span><br><span class="line">            resolved = _safe_evaluate_forwardref(field_type, cls.__module__)</span><br><span class="line">            <span class="keyword">if</span> resolved <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">                field_type = resolved</span><br><span class="line"></span><br><span class="line">        origin_type = get_origin(field_type)</span><br><span class="line">        inner_type = field_type</span><br><span class="line">        args = get_args(field_type)</span><br><span class="line"></span><br><span class="line">        is_optional = type_is_optional(field_type)  <span class="comment"># pyright: ignore[reportArgumentType]</span></span><br><span class="line">        <span class="keyword">if</span> is_optional:</span><br><span class="line">            inner_type = <span class="built_in">next</span>((arg <span class="keyword">for</span> arg <span class="keyword">in</span> args <span class="keyword">if</span> arg <span class="keyword">is</span> <span class="keyword">not</span> NoneType), field_type)</span><br><span class="line"></span><br><span class="line">        is_list = <span class="literal">False</span></span><br><span class="line">        <span class="keyword">if</span> origin_type <span class="keyword">is</span> <span class="built_in">list</span>:</span><br><span class="line">            is_list = <span class="literal">True</span></span><br><span class="line">            inner_type = args[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 尝试解析内层类型的 ForwardRef</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(inner_type, (<span class="built_in">str</span>, ForwardRef)):</span><br><span class="line">            resolved = _safe_evaluate_forwardref(inner_type, cls.__module__)</span><br><span class="line">            <span class="keyword">if</span> resolved <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">                inner_type = resolved</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> resolve_database_model:</span><br><span class="line">            <span class="keyword">if</span> is_optional:</span><br><span class="line">                <span class="keyword">return</span> inner_type | <span class="literal">None</span>  <span class="comment"># pyright: ignore[reportOperatorIssue]</span></span><br><span class="line">            <span class="keyword">elif</span> is_list:</span><br><span class="line">                <span class="keyword">return</span> <span class="built_in">list</span>[inner_type]</span><br><span class="line">            <span class="keyword">return</span> inner_type</span><br><span class="line"></span><br><span class="line">        model_class = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 首先检查 inner_type 是否直接是 DatabaseModel 的子类</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> inspect.isclass(inner_type) <span class="keyword">and</span> <span class="built_in">issubclass</span>(inner_type, DatabaseModel):  <span class="comment"># type: ignore</span></span><br><span class="line">                model_class = inner_type</span><br><span class="line">        <span class="keyword">except</span> TypeError:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 如果没有找到，查找 _dict_to_model</span></span><br><span class="line">        <span class="keyword">if</span> model_class <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            model_class = _dict_to_model.get(inner_type)  <span class="comment"># type: ignore</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> model_class <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            nested_dict = model_class.generate_typeddict(<span class="built_in">tuple</span>(sub_include_map.get(field_name, ())))</span><br><span class="line">            resolved_type = <span class="built_in">list</span>[nested_dict] <span class="keyword">if</span> is_list <span class="keyword">else</span> nested_dict  <span class="comment"># type: ignore</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> is_optional:</span><br><span class="line">                resolved_type = resolved_type | <span class="literal">None</span>  <span class="comment"># type: ignore</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> resolved_type</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 回退：使用解析后的 inner_type</span></span><br><span class="line">        resolved_type = <span class="built_in">list</span>[inner_type] <span class="keyword">if</span> is_list <span class="keyword">else</span> inner_type  <span class="comment"># type: ignore</span></span><br><span class="line">        <span class="keyword">if</span> is_optional:</span><br><span class="line">            resolved_type = resolved_type | <span class="literal">None</span>  <span class="comment"># type: ignore</span></span><br><span class="line">        <span class="keyword">return</span> resolved_type</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> includes <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        includes = ()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析嵌套的 includes</span></span><br><span class="line">    direct_includes = []</span><br><span class="line">    sub_include_map: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">list</span>[<span class="built_in">str</span>]] = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> include <span class="keyword">in</span> includes:</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;.&quot;</span> <span class="keyword">in</span> include:</span><br><span class="line">            parent, sub_include = include.split(<span class="string">&quot;.&quot;</span>, <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">if</span> parent <span class="keyword">not</span> <span class="keyword">in</span> sub_include_map:</span><br><span class="line">                sub_include_map[parent] = []</span><br><span class="line">            sub_include_map[parent].append(sub_include)</span><br><span class="line">            <span class="keyword">if</span> parent <span class="keyword">not</span> <span class="keyword">in</span> direct_includes:</span><br><span class="line">                direct_includes.append(parent)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            direct_includes.append(include)</span><br><span class="line"></span><br><span class="line">    fields = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 处理非计算的属性</span></span><br><span class="line">    <span class="keyword">for</span> field_name, field_info <span class="keyword">in</span> cls.model_fields.items():</span><br><span class="line">        field_type = field_info.annotation <span class="keyword">or</span> <span class="type">Any</span></span><br><span class="line">        field_type = _evaluate_type(field_type)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> field_name <span class="keyword">in</span> cls._ONDEMAND_DATABASE_FIELDS <span class="keyword">and</span> field_name <span class="keyword">not</span> <span class="keyword">in</span> direct_includes:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            fields[field_name] = field_type</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 处理计算属性</span></span><br><span class="line">    <span class="keyword">for</span> field_name, field_type <span class="keyword">in</span> cls._CALCULATED_FIELDS.items():</span><br><span class="line">        field_type = _evaluate_type(field_type, resolve_database_model=<span class="literal">True</span>)</span><br><span class="line">        fields[field_name] = field_type</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 处理按需计算属性</span></span><br><span class="line">    <span class="keyword">for</span> field_name, field_type <span class="keyword">in</span> cls._ONDEMAND_CALCULATED_FIELDS.items():</span><br><span class="line">        <span class="keyword">if</span> field_name <span class="keyword">not</span> <span class="keyword">in</span> direct_includes:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        field_type = _evaluate_type(field_type, resolve_database_model=<span class="literal">True</span>)</span><br><span class="line">        fields[field_name] = field_type</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> TypedDict(<span class="string">f&quot;<span class="subst">&#123;cls.__name__&#125;</span>Dict[<span class="subst">&#123;<span class="string">&#x27;, &#x27;</span>.join(includes)&#125;</span>]&quot;</span>, fields)  <span class="comment"># pyright: ignore[reportArgumentType]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>推荐像下面这样的 Dict - Model - Table 的设计。其中 Dict 必须在 Model 之前定义以便解析类型。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypedDict, NotRequired</span><br><span class="line"><span class="keyword">from</span> pydantic <span class="keyword">import</span> TypeAdapter</span><br><span class="line"><span class="keyword">from</span> sqlmodel <span class="keyword">import</span> Field, Relationship, select, func</span><br><span class="line"><span class="keyword">from</span> sqlmodel.ext.asyncio.session <span class="keyword">import</span> AsyncSession</span><br><span class="line"><span class="keyword">from</span> fastapi <span class="keyword">import</span> FastAPI, Depends, HTTPException</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserProfileDict</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    bio: NotRequired[<span class="built_in">str</span>]</span><br><span class="line">    avatar_url: NotRequired[<span class="built_in">str</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserProfileModel</span>(DatabaseModel[UserProfileDict]):</span><br><span class="line">    <span class="built_in">id</span>: <span class="built_in">int</span> = Field(primary_key=<span class="literal">True</span>)</span><br><span class="line">    bio: OnDemand[<span class="built_in">str</span>]</span><br><span class="line">    avatar_url: OnDemand[<span class="built_in">str</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserProfile</span>(UserProfileModel, table=<span class="literal">True</span>):</span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserDict</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    <span class="built_in">id</span>: <span class="built_in">int</span></span><br><span class="line">    name: <span class="built_in">str</span></span><br><span class="line">    email: NotRequired[<span class="built_in">str</span>]</span><br><span class="line">    profile: NotRequired[<span class="string">&quot;UserProfileDict&quot;</span>]</span><br><span class="line">    followers_count: NotRequired[<span class="built_in">int</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserModel</span>(DatabaseModel[UserDict]):</span><br><span class="line">    <span class="built_in">id</span>: <span class="built_in">int</span> = Field(primary_key=<span class="literal">True</span>)</span><br><span class="line">    name: <span class="built_in">str</span></span><br><span class="line">    email: OnDemand[<span class="built_in">str</span>]</span><br><span class="line"></span><br><span class="line"><span class="meta">    @included</span></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">followers_count</span>(<span class="params">session: AsyncSession, instance: <span class="string">&quot;User&quot;</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">        <span class="keyword">from</span> .followers <span class="keyword">import</span> Follower</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        result = <span class="keyword">await</span> session.execute(</span><br><span class="line">            select(func.count()).select_from(Follower).where(Follower.followed_id == instance.<span class="built_in">id</span>)</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">return</span> result.one()</span><br><span class="line"></span><br><span class="line"><span class="meta">    @ondemand</span></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">profile</span>(<span class="params">session: AsyncSession, instance: <span class="string">&quot;User&quot;</span>, includes: <span class="built_in">list</span>[<span class="built_in">str</span>] | <span class="literal">None</span> = <span class="literal">None</span></span>) -&gt; <span class="string">&quot;UserProfileDict&quot;</span>:</span><br><span class="line">        profile = <span class="keyword">await</span> session.get(UserProfile, instance.<span class="built_in">id</span>)</span><br><span class="line">        <span class="keyword">if</span> profile <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> &#123;&#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">await</span> UserProfileModel.transform(profile, includes=includes)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">User</span>(UserModel, table=<span class="literal">True</span>):</span><br><span class="line">    <span class="comment"># 定义一些不导出的内容和 Relationships...</span></span><br><span class="line">    followers: <span class="built_in">list</span>[<span class="string">&quot;Follower&quot;</span>] = Relationship(back_populates=<span class="string">&quot;followed&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">example_usage</span>(<span class="params">session: AsyncSession</span>):</span><br><span class="line">    user = <span class="keyword">await</span> session.get(User, <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">assert</span> user <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    user_dict = <span class="keyword">await</span> UserModel.transform(</span><br><span class="line">        user,</span><br><span class="line">        includes=[<span class="string">&quot;email&quot;</span>, <span class="string">&quot;followers_count&quot;</span>, <span class="string">&quot;profile.bio&quot;</span>],</span><br><span class="line">    )</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Dump result:&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(user_dict)</span><br><span class="line">    <span class="built_in">print</span>()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;TypedDict JSON Schema result:&quot;</span>)</span><br><span class="line">    UserTypedDict = UserModel.generate_typeddict((<span class="string">&quot;email&quot;</span>, <span class="string">&quot;followers_count&quot;</span>, <span class="string">&quot;profile.bio&quot;</span>))</span><br><span class="line">    <span class="built_in">print</span>(TypeAdapter(UserTypedDict).json_schema())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app = FastAPI()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.get(<span class="params"><span class="string">&quot;/user/&#123;user_id&#125;&quot;</span>, response_model=UserModel.generate_typeddict(<span class="params">(<span class="params"><span class="string">&quot;email&quot;</span>, <span class="string">&quot;followers_count&quot;</span>, <span class="string">&quot;profile.bio&quot;</span></span>)</span>)</span>)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">get_user</span>(<span class="params">user_id: <span class="built_in">int</span>, session: AsyncSession = Depends(<span class="params">get_session</span>)</span>):</span><br><span class="line">    user = <span class="keyword">await</span> session.get(User, user_id)</span><br><span class="line">    <span class="keyword">if</span> user <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> HTTPException(status_code=<span class="number">404</span>, detail=<span class="string">&quot;User not found&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">await</span> UserModel.transform(</span><br><span class="line">        user,</span><br><span class="line">        includes=[<span class="string">&quot;email&quot;</span>, <span class="string">&quot;followers_count&quot;</span>, <span class="string">&quot;profile.bio&quot;</span>],</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>输出应该是这样的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Dump result:</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;MingxuanGame&quot;</span>,</span><br><span class="line">    <span class="string">&quot;email&quot;</span>: <span class="string">&quot;MingxuanGame@example.com&quot;</span>,</span><br><span class="line">    <span class="string">&quot;followers_count&quot;</span>: <span class="number">42</span>,</span><br><span class="line">    <span class="string">&quot;profile&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;bio&quot;</span>: <span class="string">&quot;For love and fun!&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TypedDict JSON Schema result:</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;$defs&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;UserProfileDict_bio_&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;properties&quot;</span>: &#123;</span><br><span class="line">                <span class="string">&quot;id&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Id&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>&#125;,</span><br><span class="line">                <span class="string">&quot;bio&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Bio&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;string&quot;</span>&#125;,</span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="string">&quot;required&quot;</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;bio&quot;</span>],</span><br><span class="line">            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;UserProfileDict[bio]&quot;</span>,</span><br><span class="line">            <span class="string">&quot;type&quot;</span>: <span class="string">&quot;object&quot;</span>,</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;properties&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;id&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Id&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>&#125;,</span><br><span class="line">        <span class="string">&quot;name&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Name&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;string&quot;</span>&#125;,</span><br><span class="line">        <span class="string">&quot;email&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Email&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;string&quot;</span>&#125;,</span><br><span class="line">        <span class="string">&quot;followers_count&quot;</span>: &#123;<span class="string">&quot;title&quot;</span>: <span class="string">&quot;Followers Count&quot;</span>, <span class="string">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>&#125;,</span><br><span class="line">        <span class="string">&quot;profile&quot;</span>: &#123;<span class="string">&quot;$ref&quot;</span>: <span class="string">&quot;#/$defs/UserProfileDict_bio_&quot;</span>&#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;required&quot;</span>: [<span class="string">&quot;id&quot;</span>, <span class="string">&quot;name&quot;</span>, <span class="string">&quot;email&quot;</span>, <span class="string">&quot;followers_count&quot;</span>, <span class="string">&quot;profile&quot;</span>],</span><br><span class="line">    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;UserDict[email, followers_count, profile.bio]&quot;</span>,</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;object&quot;</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>API 文档也可以在 Swagger UI 中正确显示。</p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>有关 <code>OnDemand[T]</code> 的内容受到了 SQLModel 对 <code>Mapped</code> 的处理的启发。<code>Mapped</code> 在使用方面和直接使用对象无异，但在类型检查时会被解析成原类型，原理就在于伪装 <code>__get__</code>，<code>__set__</code>，<code>__delete__</code> 方法。</p>
+<h2 id="其他问题"><a href="#其他问题" class="headerlink" title="其他问题"></a>其他问题</h2><blockquote>
+<p>为什么不直接使用 Pydantic 的 <code>include</code> 参数？</p>
+</blockquote>
+<p>Pydantic 的 <code>include</code> 参数无法传递给子模型，而这种设计可以将 include 传递给子模型以实现更精细的控制。并且这种设计可以生成 TypedDict 以供 FastAPI 使用，从而生成更准确的文档。</p>
+<blockquote>
+<p>为什么不调用 Table 的 <code>transform</code> 或者将 <code>transform</code> 作为实例方法直接 dump Table？</p>
+</blockquote>
+<p>由于 Table 存储一些不需要导出的内容（比如邮箱和密码），而先 <code>model_dump</code> 再 <code>model_validate</code> 会导致 <code>ValidateError</code>。同时 Table 往往存在与响应同名的 Relationship，重名会导致无法正确 dump。</p>
+<blockquote>
+<p>Dict 存在的意义是什么</p>
+</blockquote>
+<p>Dict 使在代码内使用 dump 后的 dict 拥有类型支持。对于响应文档，只需要使用 <code>Model.generate_typeddict</code> 生成的 TypedDict 即可。</p>
+
+  </article>
+  <aside class="table-content" id="site-toc">
+  <div class="table-content-title">
+    <i class="fa fa-arrow-right fa-lg" id="site-toc-hide-btn"></i>
+    <span>目录</span>
+  </div>
+  <div class="table-content-main">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%9C%BA"><span class="toc-text">动机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84"><span class="toc-text">架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-text">实现细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-text">准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">转换的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TypedDict-%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-text">TypedDict 的生成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-text">示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%97%AE%E9%A2%98"><span class="toc-text">其他问题</span></a></li></ol>
+  </div>
+</aside>
+  
+  
+    <div class="passage-tags">
+     
+      <a href="/tags/SQLModel/"><i class="fa fa-tags"></i>SQLModel</a>
+     
+      <a href="/tags/python/"><i class="fa fa-tags"></i>python</a>
+    
+    </div>
+  
+</div>
+
+    </main>
+    
+    <div class="site-footer-wrapper">
+  <footer class="site-footer">
+    
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">Contact me</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://space.bilibili.com/478775392" target="_blank">Bilibili</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://github.com/MingxuanGame" target="_blank">GitHub</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="https://github.com/MingxuanGame/MingxuanGame/blob/master/contacts.md" target="_blank">Detail see here</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">Coding for Bot</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://nonebot.dev" target="_blank">NoneBot</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="http://onebot.dev" target="_blank">OneBot</a>
+            </span>
+          
+        </div>
+      
+        <div class="site-footer-col">
+          <h5 class="site-footer-title">Gaming</h5>
+          
+            <span class="site-footer-item">
+              <a href="https://osu.ppy.sh/users/30732590" target="_blank">osu!</a>
+            </span>
+          
+            <span class="site-footer-item">
+              <a href="https://steamcommunity.com/id/MingxuanGame" target="_blank">Steam</a>
+            </span>
+          
+        </div>
+      
+    
+    <div class="site-footer-info">
+      <i class="fa fa-clock-o"></i> 本站已稳定运行<span id="site-time"></span>
+    </div>
+    
+      <div class="site-footer-info">
+        <i class="fa fa-paw"></i> 您是本站第 <span id="site-count"></span> 位访客
+      </div>
+    
+    
+      <div class="site-footer-info">
+        <i class="fa fa-at"></i> MingxuanGame@outlook.com
+      </div>
+    
+    <div class="site-footer-info">
+      <i class="fa fa-copyright"></i> 
+      2019 <a href="https://github.com/dongyuanxin/theme-ad/" target="_blank">Theme-AD</a>.
+      Created by <a href="https://godbmw.com/" target="_blank">GodBMW</a>.
+      All rights reserved.
+    </div>
+  </footer>
+</div>
+    <div id="site-layer" style="display:none;">
+  <div class="site-layer-content">
+    <div class="site-layer-header">
+      <span class="site-layer-header-title" id="site-layer-title"></span>
+      <i class="fa fa-close" id="site-layer-close"></i>
+    </div>
+    <div class="site-layer-body" id="site-layer-container">
+      <div class="site-layer-input" id="site-layer-search" style="display: none;">
+        <div class="site-layer-input-choose">
+          <a href="javascript:void(0);" title="Change Search Engine">Google</a>
+        </div>
+        <input type="text">
+        <i class="fa fa-search"></i>
+      </div>
+      
+      <div id="site-layer-welcome" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+    
+
+<div class="bottom-bar">
+  <div class="bottom-bar-left">
+    <a href="javascript:void(0);" data-enable="false">
+      <i class="fa fa-arrow-left"></i>
+    </a>
+    <a href="/2024/10/02/HelloWorld/" data-enable="true">
+      <i class="fa fa-arrow-right"></i>
+    </a>
+  </div>
+  <div class="bottom-bar-right">
+    <a href="javascript:void(0);" data-enable="true" id="site-toc-show-btn">
+      <i class="fa fa-bars"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="site-toggle-share-btn">
+      <i class="fa fa-share-alt"></i>
+    </a>
+    
+    <a href="javascript:void(0);" id="back-top-btn">
+      <i class="fa fa-chevron-up"></i>
+    </a>
+  </div>
+</div>
+    <div id="share-btn">
+  
+  
+  
+  
+  
+</div>
+    
+
+
+
+
+
+    
+  
+      <div id="sakana" style="position:fixed;right:0;bottom:50px;"></div>
+      <script async onload='initSakanaWidget({"enable":true,"enable_mobile":true,"autoFit":false,"bottom":"50px","character":"takina","size":200,"controls":true,"stroke":{"color":"#b4b4b4","width":10},"threshold":0.1,"rotate":0,"customCharacters":[]})' src="https://cdn.jsdelivr.net/npm/sakana-widget@2.3.0/lib/sakana.min.js"></script>
+      <script>
+      function log(msg) {
+        console.log("[hexo-sakana] " + msg);
+      }
+
+      function initSakanaWidget(config) {
+        if (
+          !config.enable_mobile &&
+          window.navigator.userAgent.match(
+            /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
+          )
+        ) {
+          log(
+            '检测为移动端，且配置中未开启在移动端启用组件，hexo-sakana 已禁用'
+          );
+          return;
+        }
+        for (character of config.customCharacters) {
+          if (!["takina", "chisato"].includes(character.base)) {
+            log(`无效基础角色 ${character.base}，取消注册`);
+            continue;
+          }
+          if (character.name === "") {
+            log("名称为空，取消注册");
+            continue;
+          }
+          const originCharacter = SakanaWidget.getCharacter(character.base);
+          originCharacter.initialState = {
+            ...originCharacter.initialState,
+            ...character,
+          };
+          originCharacter.image = !character.image ? originCharacter.image : character.image
+          SakanaWidget.registerCharacter(character.name, originCharacter);
+          log(`注册自定义角色：${character.name}`)
+        }
+        new SakanaWidget({
+          character: config.character,
+          size: config.size,
+          autoFit: config.autoFit,
+          controls: config.controls,
+          stroke: config.stroke,
+          threshold: config.threshold,
+          rotate: config.rotate,
+        }).mount("#sakana");
+      }
+  </script>
+    </body>
+</html>
